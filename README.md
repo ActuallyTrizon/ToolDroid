@@ -14,4 +14,4 @@
    pkg update && pkg install python termux-api -y
 3. Download the source code.
 4. Extract the zip.
-5. Run ```bash pulse.py```
+5. Run ```droidpulse.py```
