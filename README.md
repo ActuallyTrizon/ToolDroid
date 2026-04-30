@@ -1,6 +1,6 @@
 # ToolDroid 🛠️
 
-**ToolDroid** is a specialized system utility suite for Android devices (Honor/MagicOS optimized). It leverages Termux and Shizuku to provide deep hardware insights and system-level optimizations that standard apps cannot reach.
+**ToolDroid** is a specialized system utility suite for Android devices (ADB). It leverages Termux and Shizuku to provide deep hardware insights and system-level optimizations that standard apps cannot reach.
 
 ## 🚀 Advanced Features
 * **Hybrid Monitoring:** Seamlessly switches between standard API and Shizuku `dumpsys` data.
