@@ -68,6 +68,40 @@ if __name__ == "__main__":
             time.sleep(2)
     except KeyboardInterrupt:
         print("\n\n\033[1;31mMonitor Offline.\033[0m")
+    out = [
+        "\033[2J\033[H",
+        "\033[1;34m--- DroidPulse v2.1 ---\033[0m",
+        f"Charging State:  {base.get('status')} ({base.get('percentage')}%)",
+        "-----------------------------------",
+        "\033[1;36m[DEFAULT MONITOR]\033[0m",
+        f"Health (OS):     {base.get('health').upper()}",
+        f"Temperature:     {temp}°C",
+        f"Current:         {base.get('current', 0)} mA",
+        "-----------------------------------"
+    ]
+
+    if shizuku_active:
+        out += [
+            "\033[1;35m[SHIZUKU FEATURES]\033[0m",
+            f"Health (Exact):  {health_pct}",
+            f"Max Capacity:    {max_cap} mAh",
+            f"Current Charge:  {curr_cap} mAh",
+            "-----------------------------------"
+        ]
+    else:
+        out += ["\033[2mShizuku features disabled\033[0m", "-----------------------------------"]
+
+    out.append("Updating every 2s... (Ctrl+C to Exit)")
+    return "\n".join(out)
+
+if __name__ == "__main__":
+    try:
+        while True:
+            sys.stdout.write(get_stats())
+            sys.stdout.flush()
+            time.sleep(2)
+    except KeyboardInterrupt:
+        print("\n\n\033[1;31mMonitor Offline.\033[0m")
                 curr_cap = int(line.split(":")[1].strip()) // 1000 
             if "Full charge capacity" in line:
                 max_cap = int(line.split(":")[1].strip()) // 1000
