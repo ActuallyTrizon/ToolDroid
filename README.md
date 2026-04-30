@@ -23,3 +23,6 @@
 6. Run ```cd ~/storage/downloads/DroidPulse-Main/```
 7. Run ```ls``` (Optional)
 8. Run ```python droidpulse.py```
+
+## Shizuku 🦊
+**Activate Shizuku**
