@@ -26,3 +26,4 @@
 
 ## Shizuku 🦊
 **Activate Shizuku**
+**Connect Termux with Shizuku for more features**
