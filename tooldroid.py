@@ -5,8 +5,10 @@ import sys
 import subprocess
 
 class ToolDroid:
-    def __init__(self, design_capacity_mah=7000):
+    def __init__(self, design_capacity_mah=6000):
         self.design_capacity = design_capacity_mah
+        # UPDATE THIS PATH to where your rish file actually sits
+        self.rish_path = "/data/data/com.termux/files/home/storage/rish/rish"
         self.colors = {
             "header": "\033[95m",
             "default": "\033[94m",
@@ -18,14 +20,14 @@ class ToolDroid:
         }
 
     def _exec_shizuku(self, command):
-        """Internal helper for Shizuku execution."""
         try:
-            return subprocess.check_output(['rish', '-c', command], stderr=subprocess.DEVNULL).decode('utf-8')
+            # Using the full path to rish
+            result = subprocess.check_output([self.rish_path, '-c', command], stderr=subprocess.DEVNULL)
+            return result.decode('utf-8')
         except:
             return None
 
     def fetch_core_data(self):
-        """Fetches standard Android battery data via Termux API."""
         try:
             raw = os.popen("termux-battery-status").read().strip()
             return json.loads(raw) if raw else None
@@ -33,7 +35,6 @@ class ToolDroid:
             return None
 
     def fetch_advanced_data(self):
-        """Extracts hardware-level registers via Shizuku dumpsys."""
         raw_dump = self._exec_shizuku("dumpsys battery")
         if not raw_dump:
             return None
@@ -41,8 +42,9 @@ class ToolDroid:
         adv = {}
         for line in raw_dump.split('\n'):
             if ":" in line:
-                key, val = line.split(":", 1)
-                adv[key.strip()] = val.strip()
+                parts = line.split(":", 1)
+                if len(parts) == 2:
+                    adv[parts[0].strip()] = parts[1].strip()
         return adv
 
     def render_ui(self):
@@ -53,7 +55,7 @@ class ToolDroid:
             return f"{self.colors['fail']}System Error: API Unreachable{self.colors['end']}"
 
         screen = [
-            f"{self.colors['header']}{self.colors['bold']}--- ToolDroid v1.0 by Trizon ---{self.colors['end']}",
+            f"{self.colors['header']}{self.colors['bold']}--- Trizon's ToolDroid v1.1 ---{self.colors['end']}",
             f"Power State:  {core.get('status')} ({core.get('percentage')}%)",
             f"Source:       {core.get('plugged', 'INTERNAL')}",
             "─" * 35,
@@ -65,21 +67,27 @@ class ToolDroid:
         ]
 
         if adv:
-            full_cap = int(adv.get('Full charge capacity', 0)) // 1000
-            curr_cap = int(adv.get('Charge counter', 0)) // 1000
-            health_pct = (full_cap / self.design_capacity) * 100 if full_cap > 0 else 0
-            
-            screen += [
-                f"{self.colors['shizuku']}[ SHIZUKU ENGINE ]{self.colors['end']}",
-                f"True Health:  {health_pct:.2f}%",
-                f"Capacity:     {curr_cap} / {full_cap} mAh",
-                f"Voltage:      {float(adv.get('voltage', 0)) / 1000:.2f}V",
-                "─" * 35
-            ]
+            # Handle potential string-to-int errors from dumpsys
+            try:
+                full_cap = int(adv.get('Full charge capacity', 0)) // 1000
+                curr_cap = int(adv.get('Charge counter', 0)) // 1000
+                health_pct = (full_cap / self.design_capacity) * 100 if full_cap > 0 else 0
+                voltage = float(adv.get('voltage', 0)) / 1000
+                
+                screen += [
+                    f"{self.colors['shizuku']}[ SHIZUKU ENGINE ACTIVE ]{self.colors['end']}",
+                    f"True Health:  {health_pct:.2f}%",
+                    f"Capacity:     {curr_cap} / {full_cap} mAh",
+                    f"Voltage:      {voltage:.2f}V",
+                    f"Cycles:       {adv.get('Cycle count', 'N/A')}",
+                    "─" * 35
+                ]
+            except:
+                screen += [f"{self.colors['fail']}Shizuku: Data Parsing Error{self.colors['end']}", "─" * 35]
         else:
             screen += [
-                f"{self.colors['warn']}Shizuku: Not Authorized{self.colors['end']}",
-                "Limited to basic OS metrics.",
+                f"{self.colors['warn']}Shizuku: Not Found at Path{self.colors['end']}",
+                f"Looking in: {self.colors['bold']}~/storage/rish/rish{self.colors['end']}",
                 "─" * 35
             ]
 
