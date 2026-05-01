@@ -7,7 +7,6 @@ import subprocess
 class ToolDroid:
     def __init__(self, design_capacity_mah=6000):
         self.design_capacity = design_capacity_mah
-        # UPDATE THIS PATH to where your rish file actually sits
         self.rish_path = "/data/data/com.termux/files/home/storage/rish/rish"
         self.colors = {
             "header": "\033[95m",
@@ -19,10 +18,7 @@ class ToolDroid:
             "bold": "\033[1m"
         }
 
-    def _exec_shizuku(self, command):
-    try:
-        # We call 'sh' and pass the rish path as the first argument
-        # then '-c' and your command as the following arguments
+    def _exec_shizuku(self, command):try:
         result = subprocess.check_output(
             ['sh', self.rish_path, '-c', command], 
             stderr=subprocess.DEVNULL,
@@ -30,7 +26,6 @@ class ToolDroid:
         )
         return result.decode('utf-8')
     except Exception as e:
-        # Debug: print(e) if you want to see why it fails
         return None
 
 
@@ -74,7 +69,6 @@ class ToolDroid:
         ]
 
         if adv:
-            # Handle potential string-to-int errors from dumpsys
             try:
                 full_cap = int(adv.get('Full charge capacity', 0)) // 1000
                 curr_cap = int(adv.get('Charge counter', 0)) // 1000
