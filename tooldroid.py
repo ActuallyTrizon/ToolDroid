@@ -23,8 +23,7 @@ class ToolDroid:
             ['sh', self.rish_path, '-c', command], 
             stderr=subprocess.DEVNULL,
             shell=False
-        )
-        return result.decode('utf-8')
+        )return result.decode('utf-8')
     except Exception as e:
         return None
 
