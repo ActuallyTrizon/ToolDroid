@@ -29,7 +29,7 @@
 **Activate Shizuku**
 1. export rish
 2. make folder in termux's storage named ```rish```
-3. move the ```rish```
+3. move the ```rish``` to the rish folder
 4. in termux run ```cd ~/storage/rish/```
 5. run ```sh rish```
 6. quit session by pressing quit in notifications
