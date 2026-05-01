@@ -20,12 +20,19 @@ class ToolDroid:
         }
 
     def _exec_shizuku(self, command):
-        try:
-            # Using the full path to rish
-            result = subprocess.check_output([self.rish_path, '-c', command], stderr=subprocess.DEVNULL)
-            return result.decode('utf-8')
-        except:
-            return None
+    try:
+        # We call 'sh' and pass the rish path as the first argument
+        # then '-c' and your command as the following arguments
+        result = subprocess.check_output(
+            ['sh', self.rish_path, '-c', command], 
+            stderr=subprocess.DEVNULL,
+            shell=False
+        )
+        return result.decode('utf-8')
+    except Exception as e:
+        # Debug: print(e) if you want to see why it fails
+        return None
+
 
     def fetch_core_data(self):
         try:
