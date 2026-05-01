@@ -9,11 +9,13 @@ class ToolDroid:
     def __init__(self, design_capacity_mah=5200):
         self.design_capacity = design_capacity_mah
         self.rish_path = "/data/data/com.termux/files/home/storage/rish/rish"
+        self.last_hw_check = 0
+        self.cached_hw = None
         self.colors = {
             "header": "\033[95m",
             "core": "\033[94m",
             "shizuku": "\033[92m",
-            "love": "\033[91m", # Red for the message
+            "love": "\033[91m",
             "fail": "\033[91m",
             "end": "\033[0m",
             "bold": "\033[1m"
@@ -27,12 +29,12 @@ class ToolDroid:
 
     def _exec_shizuku(self, command):
         try:
-            # Added a timeout to prevent the flickering "Not Authorized" bug
+            # Increased timeout slightly for stability
             result = subprocess.run(
                 ['sh', self.rish_path, '-c', command], 
                 capture_output=True, 
                 text=True, 
-                timeout=0.5
+                timeout=1.0 
             )
             return result.stdout if result.returncode == 0 else None
         except:
@@ -46,14 +48,19 @@ class ToolDroid:
             return None
 
     def fetch_hw_data(self):
-        raw_dump = self._exec_shizuku("dumpsys battery")
-        if not raw_dump: return None
-        adv = {}
-        for line in raw_dump.split('\n'):
-            if ":" in line:
-                k, v = line.split(":", 1)
-                adv[k.strip().lower()] = v.strip()
-        return adv
+        # Only check Shizuku every 5 seconds to prevent process flooding
+        current_time = time.time()
+        if current_time - self.last_hw_check > 5 or self.cached_hw is None:
+            raw_dump = self._exec_shizuku("dumpsys battery")
+            if raw_dump:
+                adv = {}
+                for line in raw_dump.split('\n'):
+                    if ":" in line:
+                        k, v = line.split(":", 1)
+                        adv[k.strip().lower()] = v.strip()
+                self.cached_hw = adv
+                self.last_hw_check = current_time
+        return self.cached_hw
 
     def render(self):
         api = self.fetch_api_data()
@@ -68,7 +75,7 @@ class ToolDroid:
         current_ma = api.get('current', 0)
 
         screen = [
-            f"{self.colors['header']}{self.colors['bold']}--- Trizon's ToolDroid v1.5 ---{self.colors['end']}",
+            f"{self.colors['header']}{self.colors['bold']}--- Trizon's ToolDroid v1.5.1 ---{self.colors['end']}",
             f"Power State:  {status} ({pct}%)",
             "─" * 35,
             f"{self.colors['core']}[ DEFAULT MONITOR ]{self.colors['end']}",
@@ -79,7 +86,7 @@ class ToolDroid:
 
         if hw:
             try:
-                f_cap_raw = hw.get('full charge capacity') or hw.get('charge full') or hw.get('charge_full')
+                f_cap_raw = hw.get('full charge capacity') or hw.get('charge full')
                 f_cap = int(f_cap_raw) if f_cap_raw else 0
                 if f_cap > 20000: f_cap //= 1000
                 
@@ -93,28 +100,25 @@ class ToolDroid:
                     "─" * 35
                 ]
             except:
-                screen += [f"{self.colors['fail']}Shizuku: Data Error{self.colors['end']}", "─" * 35]
+                screen += [f"{self.colors['fail']}Shizuku: Processing...{self.colors['end']}", "─" * 35]
         else:
             screen += [
-                "\033[2mShizuku: Standby/Unauthorized\033[0m",
+                "\033[2mShizuku: Waiting for Authorization...\033[0m",
                 "─" * 35
             ]
 
-        # Your message for Mey
         screen += [
             f"{self.colors['love']}❤ Mey, I love you. I hate how far we are{self.colors['end']}",
             f"{self.colors['love']}  and how little and stupid I do.{self.colors['end']}",
             "─" * 35,
-            "Refresh: 100ms | Ctrl+C to Exit"
+            "Refresh: 100ms | HW Sync: 5s"
         ]
         return "\n".join(screen)
 
 if __name__ == "__main__":
     app = ToolDroid()
     while True:
-        if os.getppid() == 1: 
-            break
-        
+        if os.getppid() == 1: break
         sys.stdout.write("\033[2J\033[H")
         sys.stdout.write(app.render())
         sys.stdout.flush()
