@@ -21,8 +21,7 @@
    pkg update && pkg install python termux-api -y
 4. Download the source code.
 5. Extract the zip.
-6. Run ```
-   cd ~/storage/downloads/ToolDroid-Main/
+6. Run ```cd ~/storage/downloads/ToolDroid-Main/```
 8. Run ```ls``` (Optional)
 9. Run ```python tooldroid.py```
 
