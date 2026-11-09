@@ -1,0 +1,5 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+TOOL_DIR="$(dirname "$(realpath "$0")")"
+
+python "$TOOL_DIR/main.py" "$@"
